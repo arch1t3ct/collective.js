@@ -1,0 +1,30 @@
+{
+    "name": "collective-js",
+    "version": "0.1.0",
+    "author": {
+        "name": "Andrius Virbičianskas",
+        "email": "a@ndri.us",
+        "url": "http://a.ndri.us/"
+    },
+    "description": "Data synchronization across multiple Node.js instances.",
+    "licenses" : [
+        {
+            "type" : "MIT",
+            "url" : "https://raw.github.com/arch1t3ct/collective.js/master/LICENSE"
+        }
+    ],
+    "engines": {
+        "node": ">=0.8.x"
+    },
+    "devDependencies": {
+        "jslint": "0.1.8"
+    },
+    "keywords": [
+        "data",
+        "synchronization"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/arch1t3ct/collective.js.git"
+    }
+}
