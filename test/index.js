@@ -9,10 +9,10 @@ var all_hosts = [{host: 'localhost', port: 8124}, {host: 'localhost', port: 8125
 
 console.log('Working on it.');
 
-new Collective(host1, all_hosts, function (collective1) {
+var collective1 = new Collective(host1, all_hosts, function (collective1) {
     /* 1. Test 1 connection count. */
     assert.strictEqual(collective1.active, 0, ['Connection count with 1 host failed.']);
-    
+
     /* 2. Test 1 connection. */
     var ident = '';
     var i = 0;
@@ -22,7 +22,7 @@ new Collective(host1, all_hosts, function (collective1) {
         }
     }
     assert.strictEqual(i, 0, ['Connection test with 1 host failed.']);
-    
+
     /* 3. Test 1 connection returns. */
     assert.strictEqual(collective1.active, 0, ['Connection return with 1 host failed.']);
 
@@ -32,7 +32,9 @@ new Collective(host1, all_hosts, function (collective1) {
 
     /* 5. Test reset to object simple. */
     collective1.set('foo1', {sample: true});
-    assert.deepEqual(collective1.data.foo1, {sample: true}, ['Reset simple to object with 1 host failed']);
+    assert.deepEqual(collective1.data.foo1,
+        {sample: true},
+        ['Reset simple to object with 1 host failed']);
 
     /* 6. Test get simple */
     var foo1 = collective1.get('foo1');
@@ -40,17 +42,21 @@ new Collective(host1, all_hosts, function (collective1) {
 
     /* 7. Test set deep. */
     collective1.set('foo2.bar', 'quz');
-    assert.strictEqual(collective1.data.foo2.bar, 'quz', ['Set deep to object with 1 host failed']);
+    assert.strictEqual(collective1.data.foo2.bar,
+        'quz',
+        ['Set deep to object with 1 host failed']);
 
     /* 8. Test reset to object deep. */
     collective1.set('foo2.bar', {sample: true});
-    assert.deepEqual(collective1.data.foo2.bar, {sample: true}, ['Reset simple to object with 1 host failed']);
+    assert.deepEqual(collective1.data.foo2.bar,
+        {sample: true},
+        ['Reset simple to object with 1 host failed']);
 
     /* 9. Test get simple */
     var foo2_bar = collective1.get('foo2.bar');
     assert.deepEqual(foo2_bar, {sample: true}, ['Get deep with 1 host failed']);
 
-    new Collective(host2, all_hosts, function (collective2) {
+    var collective2 = new Collective(host2, all_hosts, function (collective2) {
         /* 10. Test 2 connection count. */
         assert.strictEqual(collective2.active, 1, ['Connection count with 2 hosts failed.']);
 
@@ -66,7 +72,9 @@ new Collective(host1, all_hosts, function (collective1) {
 
         setTimeout(function () { // We wait for the back connection to be made.
             /* 12. Test 2 connection link count. */
-            assert.strictEqual(collective1.active, collective2.active, ['Connection link count with 2 hosts failed.']);
+            assert.strictEqual(collective1.active,
+                collective2.active,
+                ['Connection link count with 2 hosts failed.']);
 
             /* 13. Test 2 connection links. */
             var ident = '';
@@ -85,16 +93,20 @@ new Collective(host1, all_hosts, function (collective1) {
             assert.strictEqual(i, ii, ['Connection links with 2 hosts failed.']);
 
             /* 14. Test data synchronization */
-            assert.deepEqual(collective1.data, collective2.data, ['Synchronization with 2 hosts failed.']);
+            assert.deepEqual(collective1.data,
+                collective2.data,
+                ['Synchronization with 2 hosts failed.']);
 
             /* 15. Test set synchronization */
             collective1.set('foo3', 'bar');
             collective2.set('foo4', 'bar');
             setTimeout(function () { // We wait for the socket to flush the data.
-                assert.deepEqual(collective1.data, collective2.data, ['Set synchronization with 2 hosts failed.']);
+                assert.deepEqual(collective1.data,
+                    collective2.data,
+                    ['Set synchronization with 2 hosts failed.']);
 
                 console.log('All tests passed.');
-                
+
                 process.exit();
             }, 1000);
         }, 1000);

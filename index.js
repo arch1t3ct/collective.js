@@ -58,7 +58,7 @@ Collective.prototype.listenData = function (connection) {
                 command = JSON.parse(buffer.substr(0, position));
 
                 buffer = buffer.substr(position + 1);
-                
+
                 self['parse' + self.TYPES[command[0]]](command);
             }
         } while (-1 !== position && '' !== buffer);
@@ -105,7 +105,7 @@ Collective.prototype.makeConnections = function (callback) {
     self.remote.forEach(function (item) {
         self.makeConnection(item.host, item.port, function () {
             x--;
-            
+
             if (0 === x) {
                 self.notifyConnections(function () {
                     callback();
@@ -170,7 +170,7 @@ Collective.prototype.notifyConnections = function (callback) {
     var random_connection = Math.floor(Math.random() * self.active);
 
     for (ident in self.connections) {
-        if (true === self.connections.hasOwnProperty(ident)) {
+        if (self.connections.hasOwnProperty(ident)) {
             command[2] = false;
 
             if (i === random_connection) {
@@ -210,7 +210,7 @@ Collective.prototype.set = function (key, value) {
     var ident = '';
 
     for (ident in self.connections) {
-        if (true === self.connections.hasOwnProperty(ident)) {
+        if (self.connections.hasOwnProperty(ident)) {
             self.sendMessage(ident, 2, [key, value]);
         }
     }
@@ -236,10 +236,10 @@ Collective.prototype.value = function (key, value) {
             object[i] = {};
             object[i][tmp] = {};
         }
-    
+
         object = object[i];
     }
-    
+
     if ('undefined' !== typeof value) {
         object[notations.shift()] = value;
     } else {

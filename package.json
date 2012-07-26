@@ -1,5 +1,5 @@
 {
-    "name": "collective-js",
+    "name": "collective",
     "version": "0.1.0",
     "author": {
         "name": "Andrius Virbičianskas",
@@ -20,9 +20,13 @@
         "jslint": "0.1.8"
     },
     "keywords": [
-        "data",
-        "synchronization"
+        "cluster",
+        "load balancing",
+        "multi process",
+        "data synchronization"
     ],
+    "homepage": "https://github.com/arch1t3ct/collective.js",
+    "bugs": "https://github.com/arch1t3ct/collective.js/issues",
     "repository": {
         "type": "git",
         "url": "https://github.com/arch1t3ct/collective.js.git"
