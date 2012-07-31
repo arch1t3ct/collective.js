@@ -91,7 +91,7 @@ Checking code standards:
 
 ## More information
 
-Article about the inner workings and concepts coming soon.
+Article about the inner workings and concepts can be found on my [blog/portfolio](http://a.ndri.us/blog/collective-js-increase-your-node-js-application-performance-even-more).
 
 ## License
 
