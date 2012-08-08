@@ -6,7 +6,7 @@ sent to all of those instances. Very useful when using with
 [Cluster](http://nodejs.org/api/cluster.html) module, multiple servers, cloud instances, or any 
 other multi [Node.js](http://nodejs.org/) configuration.
 
-*_Unstable. Use at your own risk. Is not suitable for systems which require 100% precision and 
+*_Experimental. Use at your own risk. Is not suitable for systems which require 100% precision and 
 synchronous data updates._
 
 ## Installation
@@ -31,8 +31,8 @@ var all_hosts = [{host: 'localhost', port: 8124},
 ];
 
 var collective = new Collective({host: 'localhost', port: 8124}, all_hosts, function (collective) {
-    collective.set('foo.bar', 'quz');
-    var foo_bar = collective.get('foo.bar');
+    collective.set('foo.bar', 7);
+    var foo_bar = collective.get('foo.bar'); // = 7;
 });
 ```
 
@@ -42,8 +42,8 @@ var collective = new Collective({host: 'localhost', port: 8124}, all_hosts, func
 // Same as above.
 
 var collective = new Collective({host: 'localhost', port: 8125}, all_hosts, function (collective) {
-    collective.set('foo.bar', 'quz');
-    var foo_bar = collective.get('foo.bar');
+    collective.set('foo.bar', 7, true); // Instead of replace we use addition. Works with negative too.
+    var foo_bar = collective.get('foo.bar'); // = 14
 });
 ```
 
@@ -53,8 +53,8 @@ var collective = new Collective({host: 'localhost', port: 8125}, all_hosts, func
 // Same as above.
 
 var collective = new Collective({host: '#n.host', port: '#n.port'}, all_hosts, function (collective) {
-    collective.set('foo.bar', 'quz');
-    var foo_bar = collective.get('foo.bar');
+    collective.set('foo.bar', 'quz'); // A simple replace command.
+    var foo_bar = collective.get('foo.bar'); // = quz
 });
 ```
 
@@ -66,16 +66,17 @@ var collective = new Collective({host: '#n.host', port: '#n.port'}, all_hosts, f
   * Deep object notation sets and gets ('foo.bar.quz.etc...'). 
   * Seamless scaling. One change in hosts configuration plus a restart and everything is up.
   * Virtually no slowdown due to data storage in javascript variable.
+  * REPLACE and ADDITION (for simple math) set command types.
 
-## Roadmap (v0.2.0)
+## Roadmap (v0.3.0)
 
-  * Implement counters (+/-) and append.
-  * Figure out proper race conditions prevention. 
+  * Traffic reduction optimizations. 
+  * Some benchmarks (any suggestions?). 
 
-## Possible bugs
+## Caveats
 
-  * Race conditions may occur (Unpredictable socket drain event).
-  * Out of memory and connection choking conditions with large amounts of data.
+  * In order to prevent possible race conditions, timestamps are used, thus requiring servers to have
+synchronized time. Large differences may give unexpected results.
 
 ## Testing and JSlint
 

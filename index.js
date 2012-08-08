@@ -11,6 +11,7 @@ function Collective(local, all, callback) {
     self.connections = {};
     self.active = 0;
     self.data = {};
+    self.history = {};
 
     var server = net.createServer({allowHalfOpen: true}).listen(self.local.port, self.local.host);
 
@@ -86,7 +87,7 @@ Collective.prototype.parseNew = function (command) {
 Collective.prototype.parseData = function (command) {
     var self = this;
 
-    self.value(command[1][0], command[1][1]);
+    self.assign(command[1][0], command[1][1], command[1][2], command[1][3]);
 };
 
 Collective.prototype.parseAccept = function (command) {
@@ -199,24 +200,30 @@ Collective.prototype.makeIdent = function (host, port) {
 Collective.prototype.get = function (key) {
     var self = this;
 
-    return self.value(key);
+    var reference = self.traverse(key);
+
+    return reference[0][reference[1]];
 };
 
-Collective.prototype.set = function (key, value) {
+Collective.prototype.set = function (key, value, math) {
     var self = this;
 
-    self.value(key, value);
+    math = math || false;
+
+    var time = +new Date();
+
+    self.assign(key, value, math, time);
 
     var ident = '';
 
     for (ident in self.connections) {
         if (self.connections.hasOwnProperty(ident)) {
-            self.sendMessage(ident, 2, [key, value]);
+            self.sendMessage(ident, 2, [key, value, math, time]);
         }
     }
 };
 
-Collective.prototype.value = function (key, value) {
+Collective.prototype.traverse = function (key) {
     var self = this;
 
     var notations = key.split('.');
@@ -240,10 +247,28 @@ Collective.prototype.value = function (key, value) {
         object = object[i];
     }
 
-    if ('undefined' !== typeof value) {
-        object[notations.shift()] = value;
+    return [object, notations.shift()];
+};
+
+Collective.prototype.assign = function (key, value, math, time) {
+    var self = this;
+
+    var reference = self.traverse(key);
+
+    if (true === math) {
+        if ('undefined' === typeof reference[0][reference[1]]) {
+            reference[0][reference[1]] = 0;
+        }
+
+        reference[0][reference[1]] += value;
     } else {
-        return object[notations.shift()];
+        if ('undefined' === typeof self.history[key]) {
+            self.history[key] = time;
+        }
+
+        if (self.history[key] <= time) {
+            reference[0][reference[1]] = value;
+        }
     }
 };
 

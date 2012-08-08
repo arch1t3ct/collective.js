@@ -1,12 +1,12 @@
 {
     "name": "collective",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "author": {
         "name": "Andrius Virbičianskas",
         "email": "a@ndri.us",
         "url": "http://a.ndri.us/"
     },
-    "description": "Data synchronization across multiple Node.js instances.",
+    "description": "Data synchronization/cache tool for multiple Node.js instances.",
     "licenses" : [
         {
             "type" : "MIT",
@@ -17,13 +17,14 @@
         "node": ">=0.8.x"
     },
     "devDependencies": {
-        "jslint": "0.1.8"
+        "jslint": "0.1.9"
     },
     "keywords": [
         "cluster",
         "load balancing",
         "multi process",
-        "data synchronization"
+        "data synchronization",
+        "cache"
     ],
     "homepage": "https://github.com/arch1t3ct/collective.js",
     "bugs": "https://github.com/arch1t3ct/collective.js/issues",
