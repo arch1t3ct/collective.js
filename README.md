@@ -1,3 +1,4 @@
+[![build status](https://secure.travis-ci.org/arch1t3ct/collective.js.png)](http://travis-ci.org/arch1t3ct/collective.js)
 #collective.js
 
 A simple tool for synchronizing data across multiple [Node.js](http://nodejs.org/) instances*. 
