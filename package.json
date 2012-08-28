@@ -1,6 +1,6 @@
 {
     "name": "collective",
-    "version": "0.2.2",
+    "version": "0.2.3",
     "author": {
         "name": "Andrius Virbičianskas",
         "email": "a@ndri.us",
@@ -31,5 +31,8 @@
     "repository": {
         "type": "git",
         "url": "https://github.com/arch1t3ct/collective.js.git"
+    },
+    "scripts": {
+        "test": "node test/index.js"
     }
 }
