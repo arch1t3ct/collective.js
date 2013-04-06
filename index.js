@@ -1,3 +1,4 @@
+var dgram = require('dgram');
 var net = require('net');
 
 function Collective(local, all, callback) {
