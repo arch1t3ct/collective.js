@@ -276,19 +276,26 @@ Collective.prototype.assign = function (key, value, math, time) {
 Collective.prototype.enableDiscovery = function (ttl) {
 	var self = this;
 
-	var discoveryServer = dgram.createSocket('udp4', function (data, rinfo) {
+	var discoveryServer = dgram.createSocket('udp4');
+
+	discoveryServer.on('message', function (data, rinfo) {
 		self.parseMulticast(data);
 	});
+
+	discoveryServer.bind(1900);
 
 	discoveryServer.on('listening', function () {
 		discoveryServer.addMembership('239.255.255.250');
 	});
 
-	discoveryServer.bind(1900);
-
 	self.discoveryClient = dgram.createSocket('udp4');
 
 	self.discoveryClient.on('listening', function () {
+		self.discoveryClient.setTTL(1);
+		self.discoveryClient.setBroadcast(true);
+		self.discoveryClient.setMulticastTTL(1);
+		self.discoveryClient.setMulticastLoopback(true);
+
 		if (ttl) {
 			self.advertise(true);
 			setInterval(function () {
@@ -362,7 +369,7 @@ Collective.prototype.advertise = function (online) {
 	var self = this;
 
 	var ad = new Buffer('collective ' + (online ? '+' : '-') + self.local.host + ':' + self.local.port, 'ascii');
-	self.discoveryClient.send(ad, 0, ad.length, 1900, "239.255.255.250");
+	self.discoveryClient.send(ad, 0, ad.length, 1900, '239.255.255.250');
 }
 
 module.exports = Collective;
