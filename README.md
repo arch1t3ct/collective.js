@@ -1,13 +1,13 @@
 [![build status](https://secure.travis-ci.org/arch1t3ct/collective.js.png)](http://travis-ci.org/arch1t3ct/collective.js)
 #collective.js
 
-A simple tool for synchronizing data across multiple [Node.js](http://nodejs.org/) instances*. 
+A simple tool for synchronizing data across multiple [Node.js](http://nodejs.org/) instances. 
 Creates dual one-way tcp connections to each remote instance. Every data change is asynchronously 
 sent to all of those instances. Very useful when using with 
 [Cluster](http://nodejs.org/api/cluster.html) module, multiple servers, cloud instances, or any 
 other multi [Node.js](http://nodejs.org/) configuration.
 
-*_Experimental. Use at your own risk. Is not suitable for systems which require 100% precision and 
+_Experimental. Use at your own risk. Is not suitable for systems which require 100% precision and 
 synchronous data updates._
 
 ## Installation
@@ -48,7 +48,7 @@ var collective = new Collective({host: 'localhost', port: 8125}, all_hosts, func
 });
 ```
 
-### Node.js instance #n*
+### Node.js instance #n
 
 ```js
 // Same as above.
@@ -59,7 +59,7 @@ var collective = new Collective({host: '#n.host', port: '#n.port'}, all_hosts, f
 });
 ```
 
-*_Any (sane) amount of instances should work fine._
+_Any (sane) amount of instances should work fine._
 
 ## Features
 

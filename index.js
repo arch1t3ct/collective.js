@@ -13,7 +13,7 @@ function Collective(local, all, callback) {
     self.data = {};
     self.history = {};
 
-    var server = net.createServer({allowHalfOpen: true}).listen(self.local.port, self.local.host);
+    var server = net.createServer().listen(self.local.port, self.local.host);
 
     server.on('connection', function (connection) {
         self.listenData(connection);
@@ -106,7 +106,7 @@ Collective.prototype.makeConnections = function (callback) {
     self.remote.forEach(function (item) {
         self.makeConnection(item.host, item.port, function () {
             x--;
-
+            
             if (0 === x) {
                 self.notifyConnections(function () {
                     callback();
@@ -119,27 +119,32 @@ Collective.prototype.makeConnections = function (callback) {
 Collective.prototype.makeConnection = function (host, port, callback) {
     var self = this;
 
-    var options = {allowHalfOpen: true, host: host, port: port};
-    var connection = net.connect(options);
     var ident = self.makeIdent(host, port);
+    
+    if ('undefined' === typeof self.connections[ident]) {
+        var options = {host: host, port: port};
+        var connection = net.connect(options);
 
-    connection.on('connect', function () {
-        self.addConnection(ident, connection, function () {
-            callback();
-        });
-    });
+        connection.setKeepAlive(true);
 
-    connection.on('end', function () {
-        self.removeConnection(ident, function () {
-            callback();
+        connection.on('connect', function () {
+            self.addConnection(ident, connection, function () {
+                callback();
+            });
         });
-    });
 
-    connection.on('error', function (error) {
-        self.removeConnection(ident, function () {
-            callback();
+        connection.on('end', function () {
+            self.removeConnection(ident, function () {
+                callback();
+            });
         });
-    });
+
+        connection.on('error', function (error) {
+            self.removeConnection(ident, function () {
+                callback();
+            });
+        });
+    }
 };
 
 Collective.prototype.addConnection = function (ident, connection, callback) {
