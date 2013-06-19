@@ -106,7 +106,7 @@ Collective.prototype.makeConnections = function (callback) {
     self.remote.forEach(function (item) {
         self.makeConnection(item.host, item.port, function () {
             x--;
-            
+
             if (0 === x) {
                 self.notifyConnections(function () {
                     callback();
@@ -120,7 +120,7 @@ Collective.prototype.makeConnection = function (host, port, callback) {
     var self = this;
 
     var ident = self.makeIdent(host, port);
-    
+
     if ('undefined' === typeof self.connections[ident]) {
         var options = {host: host, port: port};
         var connection = net.connect(options);
