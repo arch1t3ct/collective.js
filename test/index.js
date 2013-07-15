@@ -4,8 +4,8 @@ var Collective = require('../index.js');
 
 /* Config */
 var host1 = {host: 'localhost', port: 8124};
-var host2 = {host: 'localhost', port: 8125};
-var all_hosts = [{host: 'localhost', port: 8124}, {host: 'localhost', port: 8125}];
+var host2 = {host: '127.0.0.1', port: 8125}; // Same host interpreted as different just for tests.
+var all_hosts = [host1, host2];
 
 console.log('Working on it.');
 

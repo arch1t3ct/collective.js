@@ -10,6 +10,7 @@ function Collective(local, all, callback) {
     self.remote = self.parseHosts(all);
     self.connections = {};
     self.active = 0;
+    self.active_remote = 0;
     self.data = {};
     self.history = {};
 
@@ -153,6 +154,12 @@ Collective.prototype.addConnection = function (ident, connection, callback) {
     self.connections[ident] = connection;
     self.active++;
 
+    var host = self.extractHost(ident);
+
+    if (host !== self.local.host) {
+        self.active_remote++;
+    }
+
     callback();
 };
 
@@ -162,6 +169,12 @@ Collective.prototype.removeConnection = function (ident, callback) {
     if ('undefined' !== typeof self.connections[ident]) {
         delete self.connections[ident];
         self.active--;
+
+        var host = self.extractHost(ident);
+
+        if (host !== self.local.host) {
+            self.active_remote--;
+        }
     }
 
     callback();
@@ -173,19 +186,24 @@ Collective.prototype.notifyConnections = function (callback) {
     var ident = '';
     var command = [self.local.host, self.local.port, false];
     var i = 0;
-    var random_connection = Math.floor(Math.random() * self.active);
+    var random_connection = Math.floor(Math.random() * self.active_remote);
+    var host = '';
 
     for (ident in self.connections) {
         if (self.connections.hasOwnProperty(ident)) {
             command[2] = false;
 
-            if (i === random_connection) {
-                command[2] = true;
+            host = self.extractHost(ident);
+
+            if (host !== self.local.host || 0 === self.active_remote) {
+                if (i === random_connection) {
+                    command[2] = true;
+                }
+
+                i++;
             }
 
             self.sendMessage(ident, 0, command);
-
-            i++;
         }
     }
 
@@ -200,6 +218,10 @@ Collective.prototype.sendMessage = function (ident, type, data) {
 
 Collective.prototype.makeIdent = function (host, port) {
     return host + ':' + port;
+};
+
+Collective.prototype.extractHost = function (ident) {
+    return ident.split(':')[0];
 };
 
 Collective.prototype.get = function (key) {
