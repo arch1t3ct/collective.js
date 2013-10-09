@@ -97,7 +97,7 @@ Article about the inner workings and concepts can be found on my [blog/portfolio
 
 ## License
 
-Copyright (c) 2012 Andrius Virbičianskas <a@ndri.us> (http://a.ndri.us/)
+Copyright (c) 2012-2013 Andrius Virbičianskas <a@ndri.us> (http://a.ndri.us/)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and 
 associated documentation files (the "Software"), to deal in the Software without restriction, 

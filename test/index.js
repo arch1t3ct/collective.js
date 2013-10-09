@@ -125,6 +125,9 @@ var collective1 = new Collective(host1, all_hosts, function (collective1) {
                         'bar',
                         ['History synchronization with 2 hosts failed.']);
 
+                    /* 20. Test get for inexistant value */
+                    assert.strictEqual(collective1.get('foo5'), undefined, ['foo5 is defined.']);
+
                     console.log('All tests passed.');
 
                     process.exit();

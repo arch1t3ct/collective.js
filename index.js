@@ -227,9 +227,14 @@ Collective.prototype.extractHost = function (ident) {
 Collective.prototype.get = function (key) {
     var self = this;
 
-    var reference = self.traverse(key);
+    var notations = key.split('.');
+    var object = self.data;
 
-    return reference[0][reference[1]];
+    while ('object' === typeof object && 0 < notations.length) {
+        object = object[notations.shift()];
+    }
+
+    return object;
 };
 
 Collective.prototype.set = function (key, value, math) {
