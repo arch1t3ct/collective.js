@@ -16,74 +16,141 @@ synchronous data updates._
 npm install collective
 ```
 
-## Usage
+## Basic Usage (full example)
 
-Every [Node.js](http://nodejs.org/) instance has the same configuration with the exception of first 
-parameter which must be unique.
+A fully working demonstration on how to use this with single or multiple servers where 
+[Cluster](http://nodejs.org/api/cluster.html) is used for [Node.js](http://nodejs.org/) scaling.
 
-### Node.js instance #1
+Every [Node.js](http://nodejs.org/) process has the same configuration with the exception of 
+`localhost` variable which should be selected per server basis (if multiple servers are used):
+
 
 ```js
+/* Load necessary modules */
+var cluster = require('cluster');
 var Collective = require('collective');
 
-var all_hosts = [{host: 'localhost', port: 8124}, 
-    {host: 'localhost', port: 8125}
-    // additional hosts #n
-];
+/* Config. Edit to suit your needs */
+var cpu_count = require('os').cpus().length; // A good practice to use all of availabe processors.
+var hosts = ['127.0.0.1'/*, host2, host3, etc */]; // Depends on how many servers you have.
+var localhost = hosts[0]; // Select a proper host from hosts pool for the current server.
+var port = 9000; // Starting port. Arbitrary, really.
 
-var collective = new Collective({host: 'localhost', port: 8124}, all_hosts, function (collective) {
-    collective.set('foo.bar', 7);
-    var foo_bar = collective.get('foo.bar'); // = 7;
-});
+/**
+ *  Populate with all possible hosts based on cpu count. WARNING: This will not work if your servers
+ *  have different cpu counts. If that's the case - create all_hosts array manually.
+ */
+var all_hosts = [];
+for (var i = 0; i < hosts.length; i++) {
+    for (var j = 0; j < cpu_count; j++) {
+        all_hosts.push({host: hosts[i], port: port + j});
+    }
+}
+
+/* Bootup cluster */
+if (true === cluster.isMaster) {
+    /* Additional mapping is required in order to preserve worker ids when they are restarted. */
+    var map = {};
+
+    function forkWorker(worker_id) {
+        var worker = cluster.fork({worker_id: worker_id});
+
+        map[worker.id] = worker_id;
+    }
+
+    for (var i = 0; i < cpu_count; i++) {
+        forkWorker(i);
+    }
+
+    /* You should do some error logging here (left out for the sake of simplicity) */
+    cluster.on('exit', function (worker, code, signal) {
+        var old_worker_id = map[worker.id];
+
+        delete map[worker.id];
+
+        forkWorker(old_worker_id);
+    });
+} else {
+    /* Set a local host and a port for collective to use. Based on worker id. */
+    var local = {host: localhost, port: port + parseInt(process.env.worker_id, 10)};
+
+    /* Start collective. */
+    var collective = new Collective(local, all_hosts, function (collective) {
+        /**
+         *  All done! This is where you start your normal coding. Lines below are just a
+         *  demonstration of collective.js set/increment/delete synchronization capabilities.
+         */
+
+        collective.set('over.nine.thousand', 0);
+
+        /* Timeouts are for demonstration purposes only, just to wait for the final result. */
+        setTimeout(function () {
+            console.log('Hey, I am ' + collective.local.host + ':' + collective.local.port
+                + ' and my \'over.nine.thousand\' key has a value of: '
+                + collective.get('over.nine.thousand'));
+
+            setTimeout(function () {
+                collective.set('over.nine.thousand', 9000, collective.OPERATIONS.INCREMENT);
+
+                setTimeout(function () {
+                    console.log('Hey, it\'s me again, ' + collective.local.host + ':'
+                        + collective.local.port
+                        + ', and my \'over.nine.thousand\' key after 9000 x '
+                        + all_hosts.length + ' hosts increment operations has a value of: '
+                        + collective.get('over.nine.thousand'));
+
+                    setTimeout(function () {
+                        collective.set('over.nine.thousand', null, collective.OPERATIONS.DELETE);
+
+                        setTimeout(function () {
+                            console.log('Hey, once more it\'s me, ' + collective.local.host + ':'
+                                + collective.local.port
+                                +', and my \'over.nine.thousand\' key after delete operation has a '
+                                + 'value of: ' + collective.get('over.nine.thousand'));
+                        }, 1000);
+                    }, 100);
+                }, 1000);
+            }, 100);
+        }, 100);
+    });
+}
 ```
-
-### Node.js instance #2
-
-```js
-// Same as above.
-
-var collective = new Collective({host: 'localhost', port: 8125}, all_hosts, function (collective) {
-    collective.set('foo.bar', 7, true); // Instead of replace we use addition. Works with negative too.
-    var foo_bar = collective.get('foo.bar'); // = 14
-});
-```
-
-### Node.js instance #n
-
-```js
-// Same as above.
-
-var collective = new Collective({host: '#n.host', port: '#n.port'}, all_hosts, function (collective) {
-    collective.set('foo.bar', 'quz'); // A simple replace command.
-    var foo_bar = collective.get('foo.bar'); // = quz
-});
-```
-
-_Any (sane) amount of instances should work fine._
 
 ## Features
 
-  * Non-blocking data synchronization across multiple [Node.js](http://nodejs.org/) instances.
+  * Non-blocking data synchronization across multiple [Node.js](http://nodejs.org/) processes and servers.
   * Deep object notation sets and gets ('foo.bar.quz.etc...'). 
-  * Seamless scaling. One change in hosts configuration plus a restart and everything is up.
-  * Virtually no slowdown due to data storage in javascript variable.
-  * REPLACE and ADDITION (for simple math) set command types.
+  * Seamless scaling. Add a host to `hosts` variable and restart [Node.js](http://nodejs.org/). That's it.
+  * Blazing fast! Data is stored in-memory (javascript variable).
+  * SET, INCREMENT, DELETE your data.
 
-## Roadmap (v0.3.0)
+## API
+#### collective.set(key, value, operation);
 
-  * Traffic reduction optimizations. 
-  * Some benchmarks (any suggestions?). 
+###### Arguments
+`key` - **String** location where to store a value. Dots (this.is.my.var) are supported which will result in 4 level deep object.  
+`value` - **Mixed** anything you want to store. Internally values are converted to JSON string so no need to do that beforehand.  
+`operation` - **Integer** what you want to do. Currently 3 operations are supported: SET (default), INCREMENT, DELETE.
+```js
+collective.set('this.is.my.var', 9000); // Sets a value. Creates if doesn't exist, replaces if does.
+collective.set('this.is.my.var', 1, collective.OPERATIONS.INCREMENT); // Increments a value. Should be 9001 after this.
+collective.set('this.is.my.var', null, collective.OPERATIONS.DELETE); // Deletes last part of the key (var in this case). Value is ignored.
+```
 
-## Caveats
+#### collective.get(key);
 
-  * In order to prevent possible race conditions, timestamps are used, thus requiring servers to have
-synchronized time. Large differences may give unexpected results.
+###### Arguments
+`key` - **String** location from which to retrieve a value.
+```js
+collective.get('this.is.my.var'); // Results in: 9001
+collective.get('this.is.my'); // Results in: {var: 9001}
+```
 
 ## Testing and JSlint
 
 Running the tests:
 ```
-node tests/index.js
+node test/index.js
 ```
 
 Checking code standards:
@@ -93,7 +160,13 @@ Checking code standards:
 
 ## More information
 
-Article about the inner workings and concepts can be found on my [blog/portfolio](http://a.ndri.us/blog/collective-js-increase-your-node-js-application-performance-even-more).
+Article (a bit outdated) about the inner workings and concepts can be found on my [blog/portfolio](http://a.ndri.us/blog/collective-js-increase-your-node-js-application-performance-even-more).
+
+
+To this date, this library has been tested with 3 servers, 8 processes each, with 3 level object nesting and a total 
+of about 2 000 000 keys with up to 100 SET operations per second.
+
+For better understanding I would also recommend looking at `test/index.js` file.
 
 ## License
 

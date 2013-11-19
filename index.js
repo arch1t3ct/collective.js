@@ -1,9 +1,12 @@
+'use strict';
+
 var net = require('net');
 
 function Collective(local, all, callback) {
     var self = this;
 
     self.TYPES = ['New', 'Accept', 'Data'];
+    self.OPERATIONS = {SET: 0, INCREMENT: 1, DELETE: 2};
     self.DELIMITER = '\n';
 
     self.local = local;
@@ -73,7 +76,7 @@ Collective.prototype.parseNew = function (command) {
     self.makeConnection(command[1][0], command[1][1], function () {
         var ident = self.makeIdent(command[1][0], command[1][1]);
 
-        if ('undefined' !== typeof self.connections[ident]) {
+        if (undefined !== self.connections[ident]) {
             var local_data = null;
 
             if (true === command[1][2]) {
@@ -122,7 +125,7 @@ Collective.prototype.makeConnection = function (host, port, callback) {
 
     var ident = self.makeIdent(host, port);
 
-    if ('undefined' === typeof self.connections[ident]) {
+    if (undefined === self.connections[ident]) {
         var options = {host: host, port: port};
         var connection = net.connect(options);
 
@@ -140,7 +143,7 @@ Collective.prototype.makeConnection = function (host, port, callback) {
             });
         });
 
-        connection.on('error', function (error) {
+        connection.on('error', function () {
             self.removeConnection(ident, function () {
                 callback();
             });
@@ -166,7 +169,7 @@ Collective.prototype.addConnection = function (ident, connection, callback) {
 Collective.prototype.removeConnection = function (ident, callback) {
     var self = this;
 
-    if ('undefined' !== typeof self.connections[ident]) {
+    if (undefined !== self.connections[ident]) {
         delete self.connections[ident];
         self.active--;
 
@@ -237,20 +240,20 @@ Collective.prototype.get = function (key) {
     return object;
 };
 
-Collective.prototype.set = function (key, value, math) {
+Collective.prototype.set = function (key, value, operation) {
     var self = this;
 
-    math = math || false;
+    operation = operation || self.OPERATIONS.SET;
 
     var time = +new Date();
 
-    self.assign(key, value, math, time);
+    self.assign(key, time, value, operation);
 
     var ident = '';
 
     for (ident in self.connections) {
         if (self.connections.hasOwnProperty(ident)) {
-            self.sendMessage(ident, 2, [key, value, math, time]);
+            self.sendMessage(ident, 2, [key, time, value, operation]);
         }
     }
 };
@@ -266,7 +269,7 @@ Collective.prototype.traverse = function (key) {
     while (1 < notations.length) {
         i = notations.shift();
 
-        if ('undefined' === typeof object[i]) {
+        if (undefined === object[i]) {
             object[i] = {};
         }
 
@@ -282,19 +285,28 @@ Collective.prototype.traverse = function (key) {
     return [object, notations.shift()];
 };
 
-Collective.prototype.assign = function (key, value, math, time) {
+Collective.prototype.assign = function (key, time, value, operation) {
     var self = this;
 
     var reference = self.traverse(key);
 
-    if (true === math) {
-        if ('undefined' === typeof reference[0][reference[1]]) {
+    if (self.OPERATIONS.INCREMENT === operation) {
+        if (undefined === reference[0][reference[1]]) {
             reference[0][reference[1]] = 0;
         }
 
         reference[0][reference[1]] += value;
+    } else if (self.OPERATIONS.DELETE === operation) {
+        if (undefined === self.history[key]) {
+            self.history[key] = time;
+        }
+
+        if (self.history[key] <= time) {
+            delete self.history[key];
+            delete reference[0][reference[1]];
+        }
     } else {
-        if ('undefined' === typeof self.history[key]) {
+        if (undefined === self.history[key]) {
             self.history[key] = time;
         }
 

@@ -1,6 +1,6 @@
 {
     "name": "collective",
-    "version": "0.2.6",
+    "version": "0.3.0",
     "author": {
         "name": "Andrius Virbičianskas",
         "email": "a@ndri.us",
@@ -17,7 +17,7 @@
         "node": ">=0.8.x"
     },
     "devDependencies": {
-        "jslint": "0.1.9"
+        "jslint": "0.2.4"
     },
     "keywords": [
         "cluster",
