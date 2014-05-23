@@ -107,6 +107,11 @@ Collective.prototype.makeConnections = function (callback) {
 
     var x = self.remote.length;
 
+	if (x === 0) {
+		callback();
+		return;
+	}
+
     self.remote.forEach(function (item) {
         self.makeConnection(item.host, item.port, function () {
             x--;
