@@ -11,6 +11,7 @@ var host3 = {host: '127.0.0.1', port: 8126}; // Same host interpreted as differe
 var all_hosts = [host1, host2];
 var collective1 = null;
 var collective2 = null;
+var collective3 = null;
 
 console.log('Working on it.');
 
@@ -149,12 +150,11 @@ collective1 = new Collective(host1, all_hosts, function (collective1) {
                             collective2.data,
                             ['Delete synchronization with 2 hosts failed.']);
 
-						var callback_run;
-						var collective3 = new Collective(host3, [host3], function (collective3) {
-							assert.ok(true, ['Callback runs when there is only one host']);
-							console.log('All tests passed.');
-							process.exit();
-						});
+                        collective3 = new Collective(host3, [host3], function () {
+                            assert.ok(true, ['Callback runs when there is only one host']);
+                            console.log('All tests passed.');
+                            process.exit();
+                        });
                     }, 500);
                 }, 500);
             }, 500);
